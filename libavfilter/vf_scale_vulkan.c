@@ -336,14 +336,6 @@ static int scale_vulkan_config_output(AVFilterLink *outlink)
             av_log(avctx, AV_LOG_ERROR, "Scaling is not supported with debayering\n");
             return AVERROR_PATCHWELCOME;
         }
-    } else if ((inlink->w == outlink->w || inlink->h == outlink->h) &&
-               (s->vkctx.input_format != s->vkctx.output_format)) {
-        s->sws = sws_alloc_context();
-        if (!s->sws)
-            return AVERROR(ENOMEM);
-        av_opt_set(s->sws, "sws_flags", "unstable", 0);
-        av_opt_set(s->sws, "scaler",
-                   s->scaler == F_NEAREST ? "point" : "bilinear", 0);
     } else if (s->vkctx.output_format != s->vkctx.input_format) {
         if (!ff_vk_mt_is_np_rgb(s->vkctx.input_format)) {
             av_log(avctx, AV_LOG_ERROR, "Unsupported input format for conversion\n");
