@@ -25,6 +25,7 @@
 #include "colorspace.h"
 #include "video.h"
 #include "libswscale/swscale.h"
+#include <stdlib.h>
 
 extern const unsigned char ff_scale_comp_spv_data[];
 extern const unsigned int ff_scale_comp_spv_len;
@@ -164,6 +165,15 @@ static av_cold int init_filter(AVFilterContext *ctx, AVFrame *in)
         for (int y = 0; y < 3; y++)
             for (int x = 0; x < 3; x++)
                 s->opts.yuv_matrix[x][y] = tmp_mat[x][y];
+
+        // https://code.ffmpeg.org/FFmpeg/FFmpeg/issues/24419
+        // Yoinked from AI fix. Looks OK since we're only modifying the conversion matrix
+        if (s->vkctx.input_format == AV_PIX_FMT_BGR0 ||
+            s->vkctx.input_format == AV_PIX_FMT_BGRA) {
+            for (int x = 0; x < 3; x++)
+                FFSWAP(float, s->opts.yuv_matrix[x][0], s->opts.yuv_matrix[x][2]);
+        }
+
         s->opts.yuv_matrix[3][3] = 1.0;
     }
 
